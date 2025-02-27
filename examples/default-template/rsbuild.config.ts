@@ -11,6 +11,6 @@ declare module 'react-router' {
 
 export default defineConfig(() => {
   return {
-    plugins: [pluginReactRouter(), pluginReact()],
+    plugins: [pluginReactRouter({serverOutput: "commonjs"}), pluginReact()],
   };
 });
