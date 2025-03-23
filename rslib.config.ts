@@ -1,9 +1,8 @@
 import {
   cjsConfig,
   commonExternals,
-  dualPackage,
   esmConfig,
-} from '@rsbuild/config/rslib.config.ts';
+} from '@rsbuild/config/rslib.config.js';
 import { defineConfig } from '@rslib/core';
 const config = defineConfig({
   source: {
@@ -19,10 +18,11 @@ const config = defineConfig({
       externals: [
         ...commonExternals,
         'user-routes',
-        /react-router-dom/,
-        /react-router/,
+        /^react-router-dom/,
+        /^react-router/,
+        /^@react-router/,
         'react',
-        /react-dom/,
+        /^react-dom/,
       ],
     },
   },

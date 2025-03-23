@@ -642,6 +642,7 @@ function generateServerBuild(
     export const basename = ${JSON.stringify(options.basename)};
     export const future = ${JSON.stringify({})};
     export const isSpaMode = ${!options.ssr};
+    export const ssr = ${options.ssr};
     export const publicPath = "/";
     export const entry = { module: entryServer };
     export const routes = {
