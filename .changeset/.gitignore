@@ -1,0 +1,6 @@
+# Ignore generated .md files
+!.changeset/*.md
+
+# Don't ignore these files
+!.changeset/README.md
+!.changeset/config.json 

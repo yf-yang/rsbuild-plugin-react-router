@@ -1,5 +1,5 @@
 {
-  "name": "@rsbuild/plugin-react-router",
+  "name": "plugin-react-router",
   "version": "0.0.1",
   "description": "React plugin for Rsbuild",
   "repository": {
@@ -44,7 +44,10 @@
     "test:core": "vitest run -c ./vitest.config.ts",
     "test:core:watch": "vitest watch -c ./vitest.config.ts",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
-    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\""
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "dependencies": {
     "@babel/core": "^7.26.3",
@@ -67,6 +70,7 @@
     "rspack-plugin-virtual-module": "^0.1.13"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.28.1",
     "@react-router/dev": "^7.4.0",
     "@react-router/node": "^7.4.0",
     "@rsbuild/config": "workspace:*",
