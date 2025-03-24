@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { copySync } from 'fs-extra';
 import type { Config } from '@react-router/dev/config';
 import type { RouteConfigEntry } from '@react-router/dev/routes';
 import type { RsbuildPlugin, Rspack } from '@rsbuild/core';
@@ -16,49 +17,14 @@ import {
   transformRoute,
   findEntryFile,
 } from './plugin-utils.js';
-import {
-  configRoutesToRouteManifest,
-  getReactRouterManifestForDev,
-} from './manifest.js';
+import type { PluginOptions } from './types.js';
 import { generateServerBuild } from './server-utils.js';
+import {
+  getReactRouterManifestForDev,
+  configRoutesToRouteManifest,
+} from './manifest.js';
 import { createModifyBrowserManifestPlugin } from './modify-browser-manifest.js';
-
-export type PluginOptions = {
-  /**
-   * Whether to disable automatic middleware setup for custom server implementation.
-   * Use this when you want to handle server setup manually.
-   * @default false
-   */
-  customServer?: boolean;
-
-  /**
-   * The output format for server builds.
-   * When set to "module", no package.json will be emitted.
-   * @default "module"
-   */
-  serverOutput?: 'module' | 'commonjs';
-};
-
-export type Route = {
-  id: string;
-  parentId?: string;
-  file: string;
-  path?: string;
-  index?: boolean;
-  caseSensitive?: boolean;
-  children?: Route[];
-};
-
-export type RouteManifestItem = Omit<Route, 'file' | 'children'> & {
-  module: string;
-  hasAction: boolean;
-  hasLoader: boolean;
-  hasClientAction: boolean;
-  hasClientLoader: boolean;
-  hasErrorBoundary: boolean;
-  imports: string[];
-  css: string[];
-};
+import { transformRouteFederation } from './transform-route-federation.js';
 
 export const pluginReactRouter = (
   options: PluginOptions = {}
@@ -144,9 +110,6 @@ export const pluginReactRouter = (
         return [] as RouteConfigEntry[];
       });
 
-    // Remove local JS_EXTENSIONS definition - use the imported one instead
-
-    // Remove duplicate findEntryFile implementation
     const entryClientPath = findEntryFile(
       resolve(appDirectory, 'entry.client')
     );
@@ -191,6 +154,14 @@ export const pluginReactRouter = (
       if (environment.name === 'web') {
         clientStats = stats?.toJson();
       }
+      if (pluginOptions.federation && ssr) {
+        const serverBuildDir = resolve(buildDirectory, 'server');
+        const clientBuildDir = resolve(buildDirectory, 'client');
+        if (existsSync(serverBuildDir)) {
+          const ssrDir = resolve(clientBuildDir, 'static');
+          copySync(serverBuildDir, ssrDir);
+        }
+      }
     });
 
     // Create virtual modules for React Router
@@ -203,7 +174,7 @@ export const pluginReactRouter = (
         basename,
         appDirectory,
         ssr,
-        federation: false,
+        federation: options.federation,
       }),
       'virtual/react-router/with-props': generateWithProps(),
     });
@@ -211,7 +182,7 @@ export const pluginReactRouter = (
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
       return mergeRsbuildConfig(config, {
         output: {
-          assetPrefix: '/',
+          assetPrefix: config.output?.assetPrefix || '/',
         },
         dev: {
           writeToDisk: true,
@@ -234,20 +205,27 @@ export const pluginReactRouter = (
           web: {
             source: {
               entry: {
-                'entry.client': finalEntryClientPath,
+                // no query needed when federation is disabled
+                'entry.client':
+                  finalEntryClientPath +
+                  (options.federation ? '?react-router-route-federation' : ''),
                 'virtual/react-router/browser-manifest':
                   'virtual/react-router/browser-manifest',
-                ...Object.values(routes).reduce(
-                  (acc: Record<string, string>, route) => {
-                    acc[route.file.slice(0, route.file.lastIndexOf('.'))] =
-                      `${resolve(appDirectory, route.file)}?react-router-route`;
-                    return acc;
-                  },
-                  {} as Record<string, string>
-                ),
+                ...Object.values(routes).reduce((acc: any, route) => {
+                  acc[route.file.slice(0, route.file.lastIndexOf('.'))] = {
+                    import: `${resolve(
+                      appDirectory,
+                      route.file
+                    )}?${options.federation ? 'react-router-route-federation' : 'react-router-route'}`,
+                  };
+                  return acc;
+                }, {} as any),
               },
             },
             output: {
+              filename: {
+                js: '[name].js',
+              },
               distPath: {
                 root: outputClientPath,
               },
@@ -256,6 +234,7 @@ export const pluginReactRouter = (
               rspack: {
                 name: 'web',
                 experiments: {
+                  topLevelAwait: true,
                   outputModule: true,
                 },
                 externalsType: 'module',
@@ -277,9 +256,23 @@ export const pluginReactRouter = (
             source: {
               entry: {
                 ...(hasServerApp
-                  ? { app: serverAppPath }
-                  : { app: 'virtual/react-router/server-build' }),
-                'entry.server': finalEntryServerPath,
+                  ? {
+                      app:
+                        serverAppPath +
+                        (options.federation
+                          ? '?react-router-route-federation'
+                          : ''),
+                    }
+                  : {
+                      app:
+                        'virtual/react-router/server-build' +
+                        (options.federation
+                          ? '?react-router-route-federation'
+                          : ''),
+                    }),
+                'entry.server':
+                  finalEntryServerPath +
+                  (options.federation ? '?react-router-route-federation' : ''),
               },
             },
             output: {
@@ -293,6 +286,7 @@ export const pluginReactRouter = (
             },
             tools: {
               rspack: {
+                target: 'async-node',
                 externals: ['express'],
                 dependencies: ['web'],
                 experiments: {
@@ -304,7 +298,9 @@ export const pluginReactRouter = (
                   chunkLoading:
                     pluginOptions.serverOutput === 'module'
                       ? 'import'
-                      : 'require',
+                      : options.federation
+                        ? 'async-node'
+                        : 'require',
                   workerChunkLoading:
                     pluginOptions.serverOutput === 'module'
                       ? 'import'
@@ -313,6 +309,9 @@ export const pluginReactRouter = (
                   library: { type: pluginOptions.serverOutput },
                   module: pluginOptions.serverOutput === 'module',
                 },
+                // optimization: {
+                //     runtimeChunk: 'single',
+                // },
               },
             },
           },
@@ -387,20 +386,34 @@ export const pluginReactRouter = (
       }
     );
 
-    // Add route transformation
+    api.transform(
+      {
+        resourceQuery: /\?react-router-route-federation/,
+      },
+      async args => {
+        return await transformRouteFederation(args);
+      }
+    );
+
     api.transform(
       {
         resourceQuery: /\?react-router-route/,
       },
       async args => {
-        let code = (
-          await esbuild.transform(args.code, {
-            jsx: 'automatic',
-            format: 'esm',
-            platform: 'neutral',
-            loader: args.resourcePath.endsWith('x') ? 'tsx' : 'ts',
-          })
-        ).code;
+        let code;
+        try {
+          code = (
+            await esbuild.transform(args.code, {
+              jsx: 'automatic',
+              format: 'esm',
+              platform: 'neutral',
+              loader: args.resourcePath.endsWith('x') ? 'tsx' : 'ts',
+            })
+          ).code;
+        } catch (error) {
+          console.error(args.resourcePath);
+          throw error;
+        }
 
         const defaultExportMatch = code.match(
           /\n\s{0,}([\w\d_]+)\sas default,?/

@@ -4,8 +4,8 @@
   "description": "React plugin for Rsbuild",
   "repository": {
     "type": "git",
-    "url": "https://github.com/web-infra-dev/rsbuild",
-    "directory": "packages/plugin-react"
+    "url": "git+https://github.com/rspack-contrib/rsbuild-plugin-react-router.git",
+    "directory": ""
   },
   "license": "MIT",
   "type": "module",
@@ -31,9 +31,12 @@
   "files": [
     "dist"
   ],
+  "publint": {
+    "ignoreMissingDts": true
+  },
   "scripts": {
     "build": "rslib build",
-    "e2e": "pnpm build && cd examples/default-template; pnpm test:e2e",
+    "e2e": "pnpm build && cd examples/default-template && pnpm test:e2e && npx kill-port 3000 && cd ../custom-node-server && pnpm test:e2e",
     "dev": "rslib build --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -55,6 +58,7 @@
     "babel-dead-code-elimination": "^1.0.8",
     "esbuild": "^0.24.2",
     "execa": "^9.5.2",
+    "fs-extra": "11.3.0",
     "isbot": "5.1.18",
     "jiti": "^2.4.2",
     "jsesc": "^3.1.0",
@@ -68,15 +72,18 @@
     "@rsbuild/config": "workspace:*",
     "@rsbuild/core": "^1.2.19",
     "@rslib/core": "^0.5.4",
-    "@rspack/core": "^1.1.6",
+    "@rspack/core": "npm:@rspack-canary/core@1.3.0-canary-ce784815-20250320233859",
     "@types/babel__core": "^7.6.8",
     "@types/babel__generator": "^7.6.8",
     "@types/babel__traverse": "^7.20.6",
+    "@types/fs-extra": "11.0.4",
     "@types/jsesc": "^3.0.3",
     "@types/node": "^22.10.1",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
     "jiti": "^2.4.1",
+    "kill-port": "^2.0.1",
+    "killport": "^1.0.2",
     "playwright": "^1.50.1",
     "prettier": "3.4.2",
     "react": "^19.0.0",
@@ -103,7 +110,12 @@
       "react-router-dom": "^7.4.0",
       "@react-router/node": "^7.4.0",
       "@react-router/dev": "^7.4.0",
-      "@types/express": "^5.0.0"
+      "@types/express": "^5.0.0",
+      "@rspack/core": "npm:@rspack-canary/core@1.3.0-canary-ce784815-20250320233859",
+      "@rspack/cli": "npm:@rspack-canary/cli@1.3.0-canary-ce784815-20250320233859",
+      "@rspack/binding": "npm:@rspack-canary/binding@1.3.0-canary-ce784815-20250320233859",
+      "@rspack/tracing": "npm:@rspack-canary/tracing@1.3.0-canary-ce784815-20250320233859",
+      "@rspack/dev-server": "npm:@rspack-canary/dev-server@1.3.0-canary-ce784815-20250320233859"
     }
   }
 }
