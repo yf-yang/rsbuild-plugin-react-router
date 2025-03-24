@@ -1,5 +1,5 @@
 ---
-'plugin-react-router': patch
+'rsbuild-plugin-react-router': patch
 ---
 
 Support React Router

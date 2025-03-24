@@ -1,5 +1,6 @@
 {
-  "name": "rsbuild-react-router",
+  "name": "custom-node-example",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "type": "module",

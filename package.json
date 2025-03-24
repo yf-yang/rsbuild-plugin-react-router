@@ -1,5 +1,5 @@
 {
-  "name": "plugin-react-router",
+  "name": "rsbuild-plugin-react-router",
   "version": "0.0.0",
   "description": "React Router plugin for Rsbuild",
   "repository": {
@@ -7,8 +7,21 @@
     "url": "git+https://github.com/rspack-contrib/rsbuild-plugin-react-router.git",
     "directory": ""
   },
+  "keywords": [
+    "rsbuild",
+    "rsbuild-plugin",
+    "react-router",
+    "react",
+    "router",
+    "ssr",
+    "rspack",
+    "plugin",
+    "remix",
+    "module-federation"
+  ],
   "license": "MIT",
   "type": "module",
+  "registry": "https://registry.npmjs.org/",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -47,7 +60,8 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "pnpm build && changeset version && changeset publish"
+    "release": "changeset publish",
+    "release:local": "pnpm build && changeset version && changeset publish"
   },
   "dependencies": {
     "@babel/core": "^7.26.3",
@@ -102,7 +116,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true,
+    "provenance": false,
     "registry": "https://registry.npmjs.org/"
   },
   "packageManager": "pnpm@9.15.3+sha512.1f79bc245a66eb0b07c5d4d83131240774642caaa86ef7d0434ab47c0d16f66b04e21e0c086eb61e62c77efc4d7f7ec071afad3796af64892fae66509173893a",
