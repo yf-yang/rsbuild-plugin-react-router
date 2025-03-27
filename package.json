@@ -1,6 +1,6 @@
 {
   "name": "rsbuild-plugin-react-router",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "React Router plugin for Rsbuild",
   "repository": {
     "type": "git",
@@ -61,7 +61,7 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish",
-    "release:local": "pnpm build && changeset version && changeset publish"
+    "release:local": "pnpm build && changeset version && changeset publish && git add . && git commit -m \"chore: version packages\" && git push && git push --tags"
   },
   "dependencies": {
     "@babel/core": "^7.26.3",
