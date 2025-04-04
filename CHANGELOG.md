@@ -1,5 +1,11 @@
 # rsbuild-plugin-react-router
 
+## 0.0.4
+
+### Patch Changes
+
+- 88b052d: do not set target when output is esm
+
 ## 0.0.3
 
 ### Patch Changes
