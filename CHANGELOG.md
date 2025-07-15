@@ -1,5 +1,11 @@
 # rsbuild-plugin-react-router
 
+## 0.0.5
+
+### Patch Changes
+
+- 797b401: Fix: Correctly expose routeDiscovery configuration for React Router v7 in Rspack builds.
+
 ## 0.0.4
 
 ### Patch Changes
