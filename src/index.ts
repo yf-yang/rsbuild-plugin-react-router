@@ -97,6 +97,9 @@ export const pluginReactRouter = (
         return {} as Config;
       });
 
+    // Set default routeDiscovery configuration
+    const routeDiscovery = { mode: 'lazy', manifestPath: '/__manifest' } as const;
+
     const routesPath = findEntryFile(resolve(appDirectory, 'routes'));
 
     // Then read the routes
@@ -175,6 +178,7 @@ export const pluginReactRouter = (
         appDirectory,
         ssr,
         federation: options.federation,
+        routeDiscovery,
       }),
       'virtual/react-router/with-props': generateWithProps(),
     });
