@@ -190,8 +190,6 @@ export const pluginReactRouter = (
         },
         dev: {
           writeToDisk: true,
-          hmr: false,
-          liveReload: true,
           setupMiddlewares: pluginOptions.customServer
             ? []
             : [
